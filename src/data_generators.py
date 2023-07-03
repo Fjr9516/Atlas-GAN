@@ -35,6 +35,15 @@ def D_data_generator(
         attribute = 'disease'  # name of attribute in npz archive
         age_max = 87.72895277  # used for scaling age values
         n_condns = 3  # number of conditions
+    elif dataset == 'OASIS3':
+        attribute = 'disease_condition'  # name of attribute in npz archive
+        age_max = 97.1726095890411  # used for scaling age values
+        n_condns = 3  # number of conditions
+    elif dataset == 'OASIS3_single_cohort':
+        age_max = 97.1726095890411  # used for scaling age values
+        n_condns = 1  # number of conditions
+    else:
+        raise ValueError('dataset expected to be dHCP, pHD, OASIS3 or OASIS3_single_cohort')
 
     # Oversample age:
     if oversample_age is True:
@@ -127,6 +136,15 @@ def G_data_generator(
         attribute = 'disease'  # name of attribute in npz archive
         age_max = 87.72895277  # used for scaling age values
         n_condns = 3  # number of conditions
+    elif dataset == 'OASIS3':
+        attribute = 'disease_condition'  # name of attribute in npz archive
+        age_max = 97.1726095890411  # used for scaling age values
+        n_condns = 3  # number of conditions
+    elif dataset == 'OASIS3_single_cohort':
+        age_max = 97.1726095890411  # used for scaling age values
+        n_condns = 1  # number of conditions
+    else:
+        raise ValueError('dataset expected to be dHCP, pHD, OASIS3 or OASIS3_single_cohort')
 
     # Oversample age:
     if oversample_age is True:
