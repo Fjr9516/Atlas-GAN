@@ -135,3 +135,54 @@ def slices(slices_in,  # the 2D slices
     if save:
         plt.savefig(save_path + '.png')
     return (fig, axs)
+
+def load_nii(path, way = 'nibabel'):
+    '''
+    Args:
+        path: path of nifti file
+        way: nibabel or sitk, sitk follow the same orientation of numpy load a npz
+    Returns: imf
+    '''
+    if way == 'nibabel':
+        img = nib.load(path).get_fdata()
+    elif way == 'sitk':
+        load_img = sitk.ReadImage(path, sitk.sitkFloat32)
+        img = sitk.GetArrayFromImage(load_img)
+    else:
+        raise ValueError('way expected to be nibabel or sitk')
+    return(img)
+
+def correct_vox2ras_matrix(wrong_nifit_path, save_nifit_path = None, reference_nifiti = './src/align_norm.nii.gz'):
+    '''
+
+    Args:
+        wrong_nifit_path: wrong nifiti file, mainly caused by using simpleitk, it uses a
+                          different loading principle, need to use it to convert back.
+                          reference web page: https://itk.org/pipermail/community/2017-November/013783.html
+        save_nifit_path: Can override the old one, or save as another name and/or path
+        reference_nifiti: an OASIS3 data which has right orientation
+
+    Returns:
+        saved_corrected_nifit_file
+    '''
+    real_img = sitk.ReadImage(reference_nifiti)
+    if wrong_nifit_path.endswith('.nii.gz') or wrong_nifit_path.endswith('.nii'):
+        wrong_img_npy = nib.load(wrong_nifit_path).get_fdata()
+    else:
+        raise ValueError('Input wrong_nifit_path is not a string!')
+
+    wrong_img = sitk.GetImageFromArray(wrong_img_npy)
+    wrong_img.SetSpacing(real_img.GetSpacing())
+    origin = []
+    for x, y in zip(wrong_img.GetSize(), real_img.GetOrigin()):
+        if y > 0:
+            origin.append(1 * x / 2.0)
+        else:
+            origin.append(-1 * x / 2.0)
+    wrong_img.SetOrigin(origin)
+    wrong_img.SetDirection(real_img.GetDirection())
+
+    if save_nifit_path == None:
+        sitk.WriteImage(wrong_img, wrong_nifit_path)
+    else:
+        sitk.WriteImage(wrong_img, save_nifit_path)

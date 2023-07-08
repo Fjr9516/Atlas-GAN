@@ -1,2 +1,6 @@
 SimpleITK
 nibabel
+voxelmorph
+neurite
+statannotations
+statsmodels
