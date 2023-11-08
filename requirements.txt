@@ -1,6 +1,11 @@
 SimpleITK
 nibabel
-voxelmorph
+voxelmorph==0.2
 neurite
 statannotations
 statsmodels
+matplotlib==3.6
+pandas==1.3.2
+numpy==1.19.2
+tensorflow==2.4.0+nv
+tensorflow-addons==0.12.1

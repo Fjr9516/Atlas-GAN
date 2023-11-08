@@ -3,11 +3,165 @@
 '''
 everything related to visualization of 2D/3D images is here
 '''
-import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 import SimpleITK as sitk
+import nibabel as nib
+
+def create_new_cmap():
+    '''
+
+    Returns: A new colormap created according to FreesurfurLUT
+
+    '''
+    from matplotlib import cm
+    from matplotlib.colors import ListedColormap
+    # create colormap using FreeSurferColorLUT.txt
+    with open('./src/FreeSurferColorLUT.txt') as f:
+        lines = f.readlines()
+    f.close()
+
+    dic_label_rgba = {}
+    for line in lines[2:]:
+        line = ' '.join(line.split())
+        values = line.split(" ")
+        if len(line) < 6:
+            continue
+        dic_label_rgba[int(values[0])] = (values[1], np.array([int(i) / 256 for i in values[2:-1]] + [1]))
+
+    viridis = cm.get_cmap('viridis', 256)
+    newcolors = viridis(np.linspace(0, 1, 256))
+
+    for label, value in dic_label_rgba.items():
+        value = value[1]
+        newcolors[label, :] = value
+
+    return ListedColormap(newcolors)
+
+def plot_3slices(fdata, cmap='gray', common_bar=False, colorbar_from_zero=False, slice_numbs=None, title=''):
+    '''
+
+    Args:
+        fdata: A ndarray with RAS+ orientation
+        cmap: colormap, default='gray'
+        common_bar: Show 3 slices using the same colarbar, default=False
+        colorbar_from_zero: Normalize colorbar from 0, default=False
+
+    Returns:
+
+    '''
+    print(f'shape of fdata {fdata.shape}')
+    # Create subplots for the three slices
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    (ax1, ax2, ax3) = axes
+
+    if common_bar:
+        # Create a common colorbar
+        max_dif = np.max(np.abs(fdata))
+        if colorbar_from_zero:
+            norm = plt.Normalize(vmin=0, vmax=max_dif)
+        else:
+            norm = plt.Normalize(vmin=-max_dif, vmax=max_dif)  # specify the range of values to be mapped to colors
+        cmap = plt.get_cmap(cmap)  # choose the colormap, 'RdBu_r'
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])  # Set the array that the ScalarMappable references
+        cbar = plt.colorbar(sm, ax=axes.ravel().tolist(), shrink=0.6, aspect=10)
+    else:
+        norm = None
+
+    if slice_numbs == None:
+        midx = fdata.shape[0] // 2
+        midy = fdata.shape[0] // 2
+        midz = fdata.shape[0] // 2
+    else:
+        midx = slice_numbs[0]
+        midy = slice_numbs[1]
+        midz = slice_numbs[2]
+
+    # # mask out?
+    # fdata[abs(fdata)<0.5] = 0.0
+
+    # Plot the three slices - one from each axis
+    ax1.imshow(fdata[midx // 2, :, :].T, cmap=cmap, origin='lower', norm=norm)
+    ax1.set_xlabel('Posterior - Anterior')
+    ax1.set_ylabel('Inferior - Superior')
+    ax1.set_title('Sagittal')
+    ax2.imshow(fdata[:, midy, :].T, cmap=cmap, origin='lower', norm=norm)
+    ax2.set_xlabel('Left - Right')
+    ax2.set_ylabel('Inferior - Superior')
+    ax2.set_title('Coronal')
+    ax3.imshow(fdata[:, :, midz].T, cmap=cmap, origin='lower', norm=norm)
+    ax3.set_xlabel('Left - Right')
+    ax3.set_ylabel('Posterior - Anterior')
+    ax3.set_title('Axial')
+    if isinstance(cmap, str) == False and common_bar == False:
+        from matplotlib.pyplot import pcolormesh
+        ax1.pcolormesh(fdata[midx, :, :].T, cmap=cmap, rasterized=True, vmin=0, vmax=255)
+        ax2.pcolormesh(fdata[:, midy, :].T, cmap=cmap, rasterized=True, vmin=0, vmax=255)
+        ax3.pcolormesh(fdata[:, :, midz].T, cmap=cmap, rasterized=True, vmin=0, vmax=255)
+
+    plt.suptitle(title)
+    plt.show()
+
+
+def plot_nifti(file_path, cmap='gray'):
+    """
+    Loads a NIfTI file from the specified filepath, reorients it to RAS+ orientation,
+    and plots three slices - one from each of the three axes.
+
+    Parameters
+    ----------
+    filepath : str
+        The file path to the input NIfTI file.
+
+    Returns
+    -------
+    None
+    """
+    # Load Nifti1Image object
+    img = nib.load(file_path)
+
+    # Transform image to RAS+ orientation
+    img = nib.as_closest_canonical(img)
+    img.set_qform(np.eye(4))
+
+    # Extract image data and affine
+    fdata = img.get_fdata()
+    print(f'Size of fdata = {fdata.shape}')
+    aff = img.affine
+
+    # Reorder the image data according to the axis codes
+    axcodes = nib.aff2axcodes(aff)
+    reorder_idx = [axcodes.index(code) for code in ('R', 'A', 'S')]
+    fdata = np.transpose(fdata, reorder_idx)
+
+    plot_3slices(fdata, cmap)
+
+
+def plot_nifti_difference(file_path1, file_path2, cmap='gray', colorbar_from_zero=False):
+    def normalize_input(file_path):
+        # Load Nifti1Image object
+        img = nib.load(file_path)
+
+        # Transform image to RAS+ orientation
+        img = nib.as_closest_canonical(img)
+        img.set_qform(np.eye(4))
+
+        # Extract image data and affine
+        fdata = img.get_fdata()
+        print(f'Size of fdata = {fdata.shape}')
+        aff = img.affine
+
+        # Reorder the image data according to the axis codes
+        axcodes = nib.aff2axcodes(aff)
+        reorder_idx = [axcodes.index(code) for code in ('R', 'A', 'S')]
+        fdata = np.transpose(fdata, reorder_idx)
+        return fdata
+
+    # load two data and do reduction
+    fdata = normalize_input(file_path1) - normalize_input(file_path2)
+
+    plot_3slices(fdata, cmap, True, colorbar_from_zero)
 
 # itk image
 def rescale(itkimg):
@@ -186,3 +340,22 @@ def correct_vox2ras_matrix(wrong_nifit_path, save_nifit_path = None, reference_n
         sitk.WriteImage(wrong_img, wrong_nifit_path)
     else:
         sitk.WriteImage(wrong_img, save_nifit_path)
+
+def show_3d_mid(load_train_img_np, cmap="gray", title = ''):
+    def show_slices(slices, cmap):
+       """ Function to display row of image slices """
+       fig, axes = plt.subplots(1, len(slices))
+       for i, slice in enumerate(slices):
+           axes[i].imshow(slice.T, cmap=cmap) #, origin="lower"
+           if isinstance(cmap, str) == False:
+               from matplotlib.pyplot import pcolormesh
+               axes[i].pcolormesh(slice.T, cmap=cmap, rasterized=True, vmin=0, vmax=255)
+
+    H,W,C = load_train_img_np.shape
+    slice_0 = load_train_img_np[int(H/2), :, :]
+    slice_1 = load_train_img_np[:,int(W/2), :]
+    slice_2 = load_train_img_np[:, :, int(C/2)]
+    show_slices([slice_0, slice_1, slice_2], cmap)
+    plt.tight_layout()
+    plt.suptitle(title)
+    plt.show()

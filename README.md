@@ -2,7 +2,15 @@
 
 ![Workflow](xxx)<!-- Insert image link here -->
 
-This repository contains the source code for the research paper titled "*Age-Related Brain Atrophy Detection via Deep Learning-Based Healthy Templates in Alzheimer's Disease: A Cross-Sectional Study*". You can find the paper [here](xxx). <!-- Insert paper link here -->
+This repository contains the source code for the research paper titled "*A deformation-based morphometry framework for disentangling normal aging from Alzheimer's disease using learned normal aging templates*". You can find the paper [here](xxx). <!-- Insert paper link here -->
+
+## TODOs
+- [ ] Add requirements
+- [ ] Add the link to share the OASIS-3 Dataset
+- [ ] Add the link to share the pre-trained weights
+- [ ] Add the Jupyter notebook demo
+
+## Requirements
 
 ## OASIS-3 Dataset (TBA)
 We provide preprocessed OASIS-3 data as part of this study. The data is included in the *npz* format, along with corresponding segmentation masks generated using [SynthSeg](https://github.com/BBillot/SynthSeg) version 2.0.

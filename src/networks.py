@@ -17,7 +17,7 @@ sys.path.append('./ext/pynd-lib/')
 sys.path.append('./ext/pytools-lib/')
 
 from neurite.tf.layers import LocalParamWithInput
-from neurite.tf.layers import MeanStream_old as MeanStream
+from neurite.tf.layers import MeanStream
 from voxelmorph.tf.layers import SpatialTransformer, VecInt, RescaleTransform
 
 
@@ -257,7 +257,7 @@ def Generator(
         # Input layer of decoder: learned parameter vector
         const_vec = KL.Lambda(const_inp)(condn)  # use condn to get batch info
         condn_emb_vxm = KL.Dense(
-            (80 * 96 * 80 * 8),
+            (np.prod(input_resolution)), #(80 * 96 * 80 * 8),
             kernel_initializer=tf.keras.initializers.RandomNormal(
                 mean=0.0,
                 stddev=0.02,
@@ -269,7 +269,8 @@ def Generator(
         )(const_vec)
 
         # Reshape to feature map and FiLM for convolutional processing:
-        condn_emb_vxm = KL.Reshape((80, 96, 80, 8))(condn_emb_vxm)
+        # condn_emb_vxm = KL.Reshape((80, 96, 80, 8))(condn_emb_vxm)
+        condn_emb_vxm = KL.Reshape((*(int(v / 2) for v in input_resolution[:3]), 8))(condn_emb_vxm)
         condn_emb_vxm = FiLM(init=init)([condn_emb_vxm, condn_vec])
 
         # 5 ResBlocks at lower resolution:
@@ -293,7 +294,7 @@ def Generator(
             sres,
             condn_vec,
             8,
-            (80, 96, 80, 8),
+            (*(int(v/2) for v in input_resolution[:3]), 8), #(80, 96, 80, 8),
             2,
             [3, 3, 3],
             8,
