@@ -119,7 +119,7 @@ parser.add_argument(
     '--nonorm_reg', dest='norm_reg', default=True, action='store_false',
 ) # Not used in the paper.
 parser.add_argument(
-    '--oversample', dest='oversample', default=True, action='store_false',
+    '--nooversample', dest='oversample', default=True, action='store_false',
 )
 parser.add_argument(
     '--d_snout', dest='d_snout', default=False, action='store_true',
