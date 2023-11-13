@@ -357,9 +357,9 @@ def plot_adjusted_scores_on_regions(df, th, component, scan_scores, scan_age, sc
             else:
                 params = ADS_paras[3]
         if single_scan:
-            oup = params * scan_age
+            oup = params * (scan_age - 60) # set offset from reference age 60
         else:
-            oup = params * df['subject_ages']
+            oup = params * (df['subject_ages'] - 60) # set offset from reference age 60
         return oup
 
     df[f'wb_t{component}_{th[0]}_diff'] = df[f'wb_t{component}_{th[0]}'] - age_effect(df, f'wb_t{component}_{th[0]}')
