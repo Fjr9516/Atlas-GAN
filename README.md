@@ -2,11 +2,11 @@
 
 ![Workflow](./figs/WorkFlow.png)
 
-This repository contains the source code for the research paper titled "*A deformation-based morphometry framework for disentangling Alzheimer's disease from normal aging using learned normal aging templates*". You can find the paper [here](xxx). <!-- Insert paper link here -->
+This repository contains the source code for the research paper titled "*A deformation-based morphometry framework for disentangling Alzheimer's disease from normal aging using learned normal aging templates*". You can find the paper [here](https://arxiv.org/abs/2311.08176).
 
 ## TODOs
 - [ ] Add the link to share the OASIS-3 Dataset
-- [ ] Add the link to the paper
+- [x] Add the link to the paper
 - [x] Share the pre-trained weights (in `./models`)
 - [x] Add the Jupyter notebook demo (`step-by-step_example.ipynb`)
 
@@ -24,7 +24,14 @@ The extracted healthy templates are also available in NIfTI format, spanning age
 
 ## Citation
 ```
-xxx
+@misc{fu2023deformationbased,
+      title={A deformation-based morphometry framework for disentangling Alzheimer's disease from normal aging using learned normal aging templates}, 
+      author={Jingru Fu and Daniel Ferreira and Örjan Smedby and Rodrigo Moreno},
+      year={2023},
+      eprint={2311.08176},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
 ```
 
 ## Acknowledgements:
